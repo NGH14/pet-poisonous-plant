@@ -19,7 +19,7 @@ export const extractPlantDetails = (
 
     const toxicityRaw = extractFieldArray($, '.field-name-field-toxicity .values');
     const toxicity = toxicityRaw.map(t => t.replace('Toxic to ', ''));
-    const isToxicToPets = toxicity.some(t => t.includes('Dog') || t.includes('Cat'));
+    const isToxicToPets = toxicity.some(t => t.includes('Dogs') || t.includes('Cats'));
 
     if (!isToxicToPets) {
       return null;

@@ -21,7 +21,7 @@ export const scrapeAll = async (
   const errors: string[] = [];
   const plantLinkMap = new Map<string, PlantLinkWithToxicity>();
 
-  for (const [animal, url] of Object.entries(urls).slice(0, 1)) {
+  for (const [animal, url] of Object.entries(urls)) {
     logger.info(`Scraping plant list for ${animal} from: ${url}`);
     const $ = await fetchPageWithRetry(client, url, config);
     if ($) {
