@@ -1,5 +1,6 @@
 import { AxiosInstance } from 'axios';
-import { PlantInfo, PlantLink, ScrapingConfig } from '../types/plant.types';
+import { PlantInfo, PlantLink, } from '../types/plant.types';
+import { ScrapingConfig } from '../types/scrape.types';
 import { fetchPageWithRetry } from './http.service';
 import { extractPlantLinks } from '../parsers/plant-list.parser';
 import { extractPlantDetails, extractImageUrl } from '../parsers/plant-detail.parser';
@@ -89,9 +90,9 @@ export const scrapePlantDetails = async (
     const batchResults = await Promise.all(batchPromises);
     const validCount = batchResults.filter(Boolean).length;
     savedCount += validCount;
-    
+
     logger.info(`Batch ${batchIndex + 1} completed. Saved: ${validCount}/${batch.length}`);
-    
+
     if (batchIndex < batches.length - 1) {
       await delay(2000, 5000);
     }
