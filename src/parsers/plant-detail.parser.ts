@@ -8,7 +8,7 @@ const logger = createLogger('PlantDetailParser');
 export const extractPlantDetails = (
   $: CheerioAPI,
   plantLink: PlantLink,
-  baseUrl: string
+  baseUrl: string,
 ): PlantInfo | null => {
   try {
     const name = sanitizeText($('h1').first().text());
@@ -17,21 +17,35 @@ export const extractPlantDetails = (
       return null;
     }
 
-    const toxicityRaw = extractFieldArray($, '.field-name-field-toxicity .values');
-    const toxicity = toxicityRaw.map(t => t.replace('Toxic to ', ''));
-    const isToxicToPets = toxicity.some(t => t.includes('Dogs') || t.includes('Cats'));
+    const toxicityRaw = extractFieldArray(
+      $,
+      '.field-name-field-toxicity .values',
+    );
+    const toxicity = toxicityRaw.map((t) =>
+      t
+        .replace('Toxic to ', '')
+        .trim()
+        .toLowerCase(),
+    );
+    const isToxicToPets = toxicity.some(
+      (t) => t.includes('dogs') || t.includes('cats'),
+    );
 
     if (!isToxicToPets) {
       return null;
     }
 
-    const toxicPrinciples = extractFieldText($, '.field-name-field-toxic-principles .values');
-    const clinicalSigns = extractFieldText($, '.field-name-field-clinical-signs .values');
-    
-    // First, try the specific selector for the plant image.
+    const toxicPrinciples = extractFieldText(
+      $,
+      '.field-name-field-toxic-principles .values',
+    );
+    const clinicalSigns = extractFieldText(
+      $,
+      '.field-name-field-clinical-signs .values',
+    );
+
     let imageUrl = extractImageUrl($, '.field-name-field-image img', baseUrl);
 
-    // If that fails, fall back to the first image in the main content area.
     if (!imageUrl) {
       imageUrl = extractImageUrl($, '.l-content img', baseUrl);
     }
@@ -41,14 +55,17 @@ export const extractPlantDetails = (
       commonNames: plantLink.commonNames,
       scientificName: plantLink.scientificName,
       family: plantLink.family,
-      toxicity: toxicity.filter(t => t === 'Dogs' || t === 'Cats'),
+      toxicity: toxicity.filter((t) => t === 'dogs' || t === 'cats'),
       toxicPrinciples,
       clinicalSigns,
       url: plantLink.url,
       imageUrl,
     };
   } catch (error) {
-    logger.error(`Error extracting plant details from ${plantLink.url}:`, error);
+    logger.error(
+      `Error extracting plant details from ${plantLink.url}:`,
+      error,
+    );
     return null;
   }
 };
@@ -62,27 +79,45 @@ const extractFieldArray = ($: CheerioAPI, selector: string): string[] => {
   $(selector).each((_, element) => {
     const text = sanitizeText($(element).text());
     if (text) {
-      items.push(...text.split(',').map(item => sanitizeText(item)).filter(Boolean));
+      items.push(
+        ...text
+          .split(',')
+          .map((item) => sanitizeText(item))
+          .filter(Boolean),
+      );
     }
   });
   return items;
 };
 
-export const extractImageUrl = ($: CheerioAPI, selector: string, baseUrl: string): string | undefined => {
+export const extractImageUrl = (
+  $: CheerioAPI,
+  selector: string,
+  baseUrl: string,
+): string | undefined => {
   const imgElement = $(selector).first();
   if (imgElement.length === 0) return undefined;
 
   const srcset = imgElement.attr('srcset');
   if (srcset) {
-    const sources = srcset.split(',').map(s => s.trim().split(' ')[0]);
-    const bestSource = sources.pop(); // Get the last (highest res) source
+    const sources = srcset.split(',').map((s) => s.trim().split(' ')[0]);
+    const bestSource = sources.pop();
     if (bestSource && !bestSource.includes('imageunavailable')) {
-      return bestSource.startsWith('http') ? bestSource : `${baseUrl}${bestSource}`;
+      return bestSource.startsWith('http')
+        ? bestSource
+        : `${baseUrl}${bestSource}`;
     }
   }
 
-  let src = imgElement.attr('data-echo') || imgElement.attr('data-src') || imgElement.attr('src');
-  if (src && !src.includes('image_placeholder.gif') && !src.includes('imageunavailable')) {
+  let src =
+    imgElement.attr('data-echo') ||
+    imgElement.attr('data-src') ||
+    imgElement.attr('src');
+  if (
+    src &&
+    !src.includes('image_placeholder.gif') &&
+    !src.includes('imageunavailable')
+  ) {
     return src.startsWith('http') ? src : `${baseUrl}${src}`;
   }
 

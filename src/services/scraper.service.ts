@@ -17,7 +17,8 @@ export const scrapeAll = async (
   urls: Record<string, string>,
   config: ScrapingConfig,
   csvFilename: string,
-  jsonlFilename: string
+  jsonlFilename: string,
+  limit?: number
 ): Promise<{ errors: string[] }> => {
   const errors: string[] = [];
   const plantLinkMap = new Map<string, PlantLinkWithToxicity>();
@@ -47,8 +48,13 @@ export const scrapeAll = async (
     }
   }
 
-  const allPlantLinks = Array.from(plantLinkMap.values());
+  let allPlantLinks = Array.from(plantLinkMap.values());
   logger.info(`Found ${allPlantLinks.length} unique plants to scrape.`);
+
+  if (limit) {
+    allPlantLinks = allPlantLinks.slice(0, limit);
+    logger.info(`Limiting to ${limit} plants for this run.`);
+  }
 
   return scrapePlantDetails(client, allPlantLinks, config, csvFilename, jsonlFilename);
 };

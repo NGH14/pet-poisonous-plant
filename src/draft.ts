@@ -1,28 +1,27 @@
 import { createHttpClient } from './services/http.service';
-import { scrapeAll, scrapePlantDetails } from './services/scraper.service';
+import { scrapeAll } from './services/scraper.service';
 import { initializeCSV, generateTimestampedFilename } from './services/export.service';
 import { DEFAULT_CONFIG, ASPCA_URLS } from './config/scraper.config';
 import { createLogger } from './utils/logger.util';
 
-const logger = createLogger('Main');
+const logger = createLogger('DraftScraper');
 
-export const runScraper = async () => {
+export const DraftScraper = async () => {
   const config = DEFAULT_CONFIG;
   const client = createHttpClient(config);
 
-  const jsonlFilename = generateTimestampedFilename('aspca_plants', 'jsonl');
-  const csvFilename = generateTimestampedFilename('aspca_plants', 'csv');
+  const jsonlFilename = generateTimestampedFilename('aspca_plants_draft', 'jsonl');
+  const csvFilename = generateTimestampedFilename('aspca_plants_draft', 'csv');
 
   await initializeCSV(csvFilename);
 
   const urlsToScrape = {
     Dogs: ASPCA_URLS.DOGS_TOXIC,
-    Cats: ASPCA_URLS.CATS_TOXIC,
   };
 
-  logger.info('Starting ASPCA plant scraping for dogs and cats...');
+  logger.info('Starting ASPCA plant scraping for 5 plants...');
 
-  const { errors } = await scrapeAll(client, urlsToScrape, config, csvFilename, jsonlFilename,);
+  const { errors } = await scrapeAll(client, urlsToScrape, config,csvFilename,jsonlFilename, 5);
 
   logger.info('--------------------------------------------------');
   logger.info('Scraping finished!');
@@ -37,5 +36,5 @@ export const runScraper = async () => {
 
 
 if (require.main === module) {
-  runScraper();
+  DraftScraper();
 }
