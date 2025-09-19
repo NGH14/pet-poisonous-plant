@@ -26,6 +26,9 @@ jobs:
         with:
           target_branch: gh-pages
           build_dir: .
+          patterns: |
+            poisonousPlant.csv
+            poisonousPlant.jsonl
           commit_message: 'chore: deploy to GitHub Pages'
           keep_files: false
           user_name: 'github-actions[bot]'

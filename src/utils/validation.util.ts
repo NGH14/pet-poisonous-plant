@@ -12,8 +12,6 @@ export const sanitizeText = (text: string): string => {
 };
 
 export const parseCommonNames = (text: string): string[] => {
-  const match = text.match(/\(([^)]+)\)/);
-  return match ? 
-    match[1].split(',').map(name => sanitizeText(name)).filter(Boolean) : 
-    [];
+  const cleanedText = text.replace(/including:/g, '');
+  return cleanedText.split(',').map(name => sanitizeText(name)).filter(Boolean);
 };
