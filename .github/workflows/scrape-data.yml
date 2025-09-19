@@ -1,0 +1,36 @@
+name: Scrape Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1,15 * *' # Run on the 1st and 15th of every month
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run scraper
+        run: npm start
+
+      - name: Upload scraped data
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-data
+          path: |
+            poisonousPlant.csv
+            poisonousPlant.jsonl
