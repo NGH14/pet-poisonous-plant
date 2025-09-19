@@ -6,7 +6,6 @@ import { createLogger } from './utils/logger.util';
 
 const logger = createLogger('Main');
 
-// Example usage function
 export const runScraper = async () => {
   const config = DEFAULT_CONFIG;
   const client = createHttpClient(config);

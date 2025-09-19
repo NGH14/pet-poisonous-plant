@@ -1,3 +1,4 @@
+import { PlantInfo } from './plant.types';
 export interface ScrapingResult {
   plants: PlantInfo[];
   metadata: {
