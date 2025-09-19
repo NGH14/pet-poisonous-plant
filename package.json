@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
-    "draft": "ts-node src/draft.ts"
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=development ts-node src/index.ts",
+    "draft": "NODE_ENV=development ts-node src/draft.ts"
   },
   "dependencies": {
     "axios": "^1.6.0",

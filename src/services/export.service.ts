@@ -52,7 +52,13 @@ export const appendToJSONL = async (
   }
 };
 
-export const generateTimestampedFilename = (prefix: string, extension: string): string => {
+import { isProduction } from '../config/env.config';
+
+export const generateFilename = (prefix: string, extension: string): string => {
+  if (isProduction) {
+    return `${prefix}.${extension}`;
+  }
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   return `${prefix}_${timestamp}.${extension}`;
 };

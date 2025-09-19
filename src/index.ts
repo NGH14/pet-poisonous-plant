@@ -1,8 +1,9 @@
 import { createHttpClient } from './services/http.service';
 import { scrapeAll, scrapePlantDetails } from './services/scraper.service';
-import { initializeCSV, generateTimestampedFilename } from './services/export.service';
+import { initializeCSV, generateFilename } from './services/export.service';
 import { DEFAULT_CONFIG, ASPCA_URLS } from './config/scraper.config';
 import { createLogger } from './utils/logger.util';
+import { isProduction } from './config/env.config';
 
 const logger = createLogger('Main');
 
@@ -10,8 +11,10 @@ export const runScraper = async () => {
   const config = DEFAULT_CONFIG;
   const client = createHttpClient(config);
 
-  const jsonlFilename = generateTimestampedFilename('aspca_plants', 'jsonl');
-  const csvFilename = generateTimestampedFilename('aspca_plants', 'csv');
+  const prefix = isProduction ? 'poisonousPlant' : 'aspca_plants';
+
+  const jsonlFilename = generateFilename(prefix, 'jsonl');
+  const csvFilename = generateFilename(prefix, 'csv');
 
   await initializeCSV(csvFilename);
 

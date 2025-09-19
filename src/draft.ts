@@ -1,6 +1,6 @@
 import { createHttpClient } from './services/http.service';
 import { scrapeAll } from './services/scraper.service';
-import { initializeCSV, generateTimestampedFilename } from './services/export.service';
+import { initializeCSV, generateFilename } from './services/export.service';
 import { DEFAULT_CONFIG, ASPCA_URLS } from './config/scraper.config';
 import { createLogger } from './utils/logger.util';
 
@@ -10,8 +10,8 @@ export const DraftScraper = async () => {
   const config = DEFAULT_CONFIG;
   const client = createHttpClient(config);
 
-  const jsonlFilename = generateTimestampedFilename('aspca_plants_draft', 'jsonl');
-  const csvFilename = generateTimestampedFilename('aspca_plants_draft', 'csv');
+  const jsonlFilename = generateFilename('aspca_plants_draft', 'jsonl');
+  const csvFilename = generateFilename('aspca_plants_draft', 'csv');
 
   await initializeCSV(csvFilename);
 
