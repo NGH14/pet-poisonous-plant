@@ -3,4 +3,5 @@ export interface ScrapingConfig {
   maxRetries: number;
   concurrency: number;
   timeout: number;
+  delayBetweenBatches: number;
 }

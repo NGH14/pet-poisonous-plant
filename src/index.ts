@@ -13,8 +13,8 @@ export const runScraper = async () => {
 
   const prefix = isProduction ? 'poisonousPlant' : 'aspca_plants';
 
-  const jsonlFilename = generateFilename(prefix, 'jsonl');
   const csvFilename = generateFilename(prefix, 'csv');
+  const jsonFilename = generateFilename(prefix, 'json');
 
   await initializeCSV(csvFilename);
 
@@ -25,7 +25,7 @@ export const runScraper = async () => {
 
   logger.info('Starting ASPCA plant scraping for dogs and cats...');
 
-  const { errors } = await scrapeAll(client, urlsToScrape, config, csvFilename, jsonlFilename,);
+  const { errors } = await scrapeAll(client, urlsToScrape, config, csvFilename, jsonFilename,);
 
   logger.info('--------------------------------------------------');
   logger.info('Scraping finished!');
@@ -34,7 +34,7 @@ export const runScraper = async () => {
     logger.warn('Errors occurred during scraping:');
     errors.forEach(err => logger.warn(`- ${err}`));
   }
-  logger.info(`Results saved to ${csvFilename} and ${jsonlFilename}`);
+  logger.info(`Results saved to ${csvFilename} and ${jsonFilename}`);
   logger.info('--------------------------------------------------');
 };
 
