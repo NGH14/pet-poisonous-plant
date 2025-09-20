@@ -39,10 +39,11 @@ export const extractPlantDetails = (
       $,
       '.field-name-field-toxic-principles .values',
     );
-    const clinicalSigns = extractFieldText(
+    const clinicalSignsRaw = extractFieldText(
       $,
       '.field-name-field-clinical-signs .values',
     );
+    const clinicalSigns = clinicalSignsRaw.replace(/\(not horses\)/g, '').replace(/\s{2,}/g, ' ').trim();
 
     let imageUrl = extractImageUrl($, '.field-name-field-image img', baseUrl);
 

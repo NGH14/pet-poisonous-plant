@@ -36,4 +36,4 @@ jobs:
           name: scraped-data
           path: |
             poisonousPlant.csv
-            poisonousPlant.jsonl
+            poisonousPlant.json

@@ -6,7 +6,7 @@ import { extractPlantLinks } from '../parsers/plant-list.parser';
 import { extractPlantDetails, extractImageUrl } from '../parsers/plant-detail.parser';
 import { delay } from '../utils/delay.util';
 import { createLogger } from '../utils/logger.util';
-import { appendToCSV, appendToJSONL } from './export.service';
+import { appendToCSV, writeToJSON } from './export.service';
 
 const logger = createLogger('ScraperService');
 
@@ -17,20 +17,16 @@ export const scrapeAll = async (
   urls: Record<string, string>,
   config: ScrapingConfig,
   csvFilename: string,
-  jsonlFilename: string,
+  jsonFilename: string,
   limit?: number
 ): Promise<{ errors: string[] }> => {
-  const errors: string[] = [];
   const plantLinkMap = new Map<string, PlantLinkWithToxicity>();
 
   for (const [animal, url] of Object.entries(urls)) {
     logger.info(`Scraping plant list for ${animal} from: ${url}`);
     const $ = await fetchPageWithRetry(client, url, config);
-    if ($) {
-      console.log($.html());
-    }
     if (!$) {
-      errors.push(`Failed to fetch plant list for ${animal}`);
+      // errors.push(`Failed to fetch plant list for ${animal}`);
       continue;
     }
 
@@ -56,56 +52,63 @@ export const scrapeAll = async (
     logger.info(`Limiting to ${limit} plants for this run.`);
   }
 
-  return scrapePlantDetails(client, allPlantLinks, config, csvFilename, jsonlFilename);
+  const { plants, errors } = await scrapePlantDetails(client, allPlantLinks, config, csvFilename);
+
+  await writeToJSON(plants, jsonFilename);
+
+  return { errors };
 };
 
 export const scrapePlantDetails = async (
   client: AxiosInstance,
   plantLinks: PlantLink[],
   config: ScrapingConfig,
-  csvFilename: string,
-  jsonlFilename: string
-): Promise<{ errors: string[] }> => {
+  csvFilename: string
+): Promise<{ plants: PlantInfo[], errors: string[] }> => {
   const errors: string[] = [];
+  const plants: PlantInfo[] = [];
   const batches = createBatches(plantLinks, config.concurrency);
-  let savedCount = 0;
 
-  logger.info(`Processing ${plantLinks.length} plants in ${batches.length} batches for review`);
+  logger.info(`Processing ${plantLinks.length} plants in ${batches.length} batches.`);
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
     logger.info(`Processing batch ${batchIndex + 1}/${batches.length}`);
 
     const batchPromises = batch.map(async (plantLink) => {
-      logger.info(`--- Reviewing: ${plantLink.name} ---`);
-      const $ = await fetchPageWithRetry(client, plantLink.url, config);
-      if ($) {
-        const baseUrl = new URL(plantLink.url).origin;
-        const plant = extractPlantDetails($, plantLink, baseUrl);
+      try {
+        const $ = await fetchPageWithRetry(client, plantLink.url, config);
+        if ($) {
+          const baseUrl = new URL(plantLink.url).origin;
+          const plant = extractPlantDetails($, plantLink, baseUrl);
 
-        if (plant) {
-          await appendToCSV(plant, csvFilename);
-          await appendToJSONL(plant, jsonlFilename);
-          return true;
+          if (plant) {
+            await appendToCSV(plant, csvFilename);
+            return plant;
+          }
         }
+        errors.push(`Failed to fetch or process: ${plantLink.url}`);
+        return null;
+      } catch (error) {
+        logger.error(`Error processing ${plantLink.url}:`, error);
+        errors.push(`Failed to process: ${plantLink.url}`);
+        return null;
       }
-      errors.push(`Failed to fetch or process: ${plantLink.url}`);
-      return false;
     });
 
     const batchResults = await Promise.all(batchPromises);
-    const validCount = batchResults.filter(Boolean).length;
-    savedCount += validCount;
+    const validPlants = batchResults.filter((p): p is PlantInfo => p !== null);
+    plants.push(...validPlants);
 
-    logger.info(`Batch ${batchIndex + 1} completed. Saved: ${validCount}/${batch.length}`);
+    logger.info(`Batch ${batchIndex + 1} completed. Saved: ${validPlants.length}/${batch.length}`);
 
     if (batchIndex < batches.length - 1) {
-      await delay(2000, 5000);
+      await delay(config.delayBetweenBatches, config.delayBetweenBatches + 2000);
     }
   }
 
-  logger.info(`Finished processing all batches. Total plants saved: ${savedCount}`);
-  return { errors };
+  logger.info(`Finished processing all batches. Total plants saved: ${plants.length}`);
+  return { plants, errors };
 };
 
 const createBatches = <T>(items: T[], batchSize: number): T[][] => {

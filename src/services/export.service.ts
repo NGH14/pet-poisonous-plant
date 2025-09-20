@@ -41,14 +41,15 @@ export const appendToCSV = async (
   }
 };
 
-export const appendToJSONL = async (
-  plant: PlantInfo,
+export const writeToJSON = async (
+  plants: PlantInfo[],
   filename: string
 ): Promise<void> => {
   try {
-    await fs.appendFile(filename, JSON.stringify(plant) + '\n', 'utf8');
+    await fs.writeFile(filename, JSON.stringify(plants, null, 2), 'utf8');
+    logger.info(`Successfully wrote ${plants.length} plants to ${filename}`);
   } catch (error) {
-    logger.error(`Error appending to JSONL file ${filename}:`, error);
+    logger.error(`Error writing to JSON file ${filename}:`, error);
   }
 };
 

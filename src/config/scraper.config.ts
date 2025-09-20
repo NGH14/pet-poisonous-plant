@@ -5,6 +5,7 @@ export const DEFAULT_CONFIG: ScrapingConfig = {
   maxRetries: 5,
   concurrency: 2,
   timeout: 10000,
+  delayBetweenBatches: 2000,
 };
 
 export const ASPCA_URLS = {
