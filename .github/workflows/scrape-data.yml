@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:
   schedule:
-    - cron: '0 0 1,15 * *' # Run on the 1st and 15th of every month
+    - cron: '0 0 * * 1'
 
 jobs:
   scrape:
